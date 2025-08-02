@@ -1,11 +1,7 @@
 streamlit
 langchain
-transformers
-torch
-auto-gptq
+langchain-community
+langchain-chroma
 sentence-transformers
-chromadb
-unstructured
-pdf2image
-pypdf
-pillow
+PyPDF2
+huggingface-hub
