@@ -1,3 +1,9 @@
+import sys
+import pysqlite3
+
+sys.modules["sqlite3"] = pysqlite3
+sys.modules["sqlite3.dbapi2"] = pysqlite3
+
 import os
 from dotenv import load_dotenv
 
@@ -60,3 +66,4 @@ def answer_question(user_question):
     answer = response["result"]
 
     return answer
+
