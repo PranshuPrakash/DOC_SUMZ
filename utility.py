@@ -1,50 +1,44 @@
 import os
-from dotenv import load_dotenv
-
+from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import UnstructuredPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
+from langchain.llms import HuggingFacePipeline
+from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, BitsAndBytesConfig
 
-# Load environment variables
-load_dotenv()
-working_dir = os.path.dirname(os.path.abspath(__file__))
+persist_directory = "docs/chroma"
+embedding_model = "sentence-transformers/all-MiniLM-L6-v2"
 
-# Load embedding model
-embedding = HuggingFaceEmbeddings()
-
-def process_document_to_chroma_db(file_name):
-    """Loads and processes PDF, splits text, stores vector DB."""
-    loader = UnstructuredPDFLoader(f"{working_dir}/{file_name}")
+def process_document_to_chroma_db(file_path):
+    loader = UnstructuredPDFLoader(file_path)
     documents = loader.load()
 
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=2000,
-        chunk_overlap=200
-    )
-    texts = text_splitter.split_documents(documents)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+    docs = splitter.split_documents(documents)
 
-    vectordb = Chroma.from_documents(
-        documents=texts,
-        embedding=embedding,
-        persist_directory=f"{working_dir}/doc_vectorstore"
+    embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
+    Chroma.from_documents(docs, embedding=embeddings, persist_directory=persist_directory).persist()
+
+def load_local_model():
+    model_id = "deepseek-ai/deepseek-coder-1.3b-base"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        device_map="auto",
+        trust_remote_code=True,
+        quantization_config=BitsAndBytesConfig(load_in_4bit=True)
     )
 
-    return 0
+    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=512)
+    return HuggingFacePipeline(pipeline=pipe)
 
-def get_answer_with_llm(user_question, llm):
-    """Answers user question using the selected LLM and chroma DB."""
-    vectordb = Chroma(
-        persist_directory=f"{working_dir}/doc_vectorstore",
-        embedding_function=embedding
-    )
+def answer_question(question):
+    embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
+    vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
     retriever = vectordb.as_retriever()
 
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=retriever
-    )
-    response = qa_chain.invoke({"query": user_question})
-    return response["result"]
+    llm = load_local_model()
+    qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever, return_source_documents=False)
+
+    return qa_chain.run(question)
