@@ -9,5 +9,15 @@ langchain-chroma
 langchain-groq
 streamlit
 sentence-transformers
-pysqlite3-binary>=0.5.1 
+pysqlite3-binary>=0.5.1
+streamlit
+langchain
+chromadb
+unstructured
+unstructured-inference
+opencv-python-headless
+tiktoken
+python-dotenv
+
+
 
