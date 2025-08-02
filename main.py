@@ -31,4 +31,5 @@ if st.button("Get Answer"):
         raw_answer = answer_question(user_question)
         clean_answer = re.sub(r"<.*?>", "", raw_answer).strip()
 
-        st.markdown("### 🤖 Re
+        st.markdown("### 🤖 Response")
+        st.write(clean_answer)
