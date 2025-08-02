@@ -3,29 +3,32 @@ import re
 import streamlit as st
 from utility import process_document_to_chroma_db, answer_question
 
-# Page config
-st.set_page_config(page_title="DOC_SUMZ - Free RAG", layout="centered")
-st.title("📄 DOC_SUMZ: RAG with Free Local LLM")
+# Set page configuration
+st.set_page_config(page_title="DOC_SUMZ - RAG QA", layout="centered")
+st.title("📄 DOC_SUMZ - RAG Based QA System")
 
-# Sidebar file upload
-st.sidebar.header("Upload PDF")
-uploaded_file = st.sidebar.file_uploader("Upload your PDF", type=["pdf"])
+# Sidebar: File uploader
+st.sidebar.header("📤 Upload Your PDF Document")
+uploaded_file = st.sidebar.file_uploader("Choose a PDF file", type=["pdf"])
 
-if uploaded_file:
+if uploaded_file is not None:
+    # Save uploaded file locally
     file_path = os.path.join(os.getcwd(), uploaded_file.name)
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    process_document_to_chroma_db(file_path)
-    st.sidebar.success("✅ Document Indexed")
 
-# Question interface
-user_question = st.text_input("Ask something from the document:")
+    # Process and index the document
+    process_document_to_chroma_db(file_path)
+    st.sidebar.success("✅ Document indexed successfully!")
+
+# User input
+user_question = st.text_input("❓ Ask a question based on the document:")
 
 if st.button("Get Answer"):
     if not user_question.strip():
-        st.warning("Please enter a question.")
+        st.warning("⚠️ Please enter a question.")
     else:
         raw_answer = answer_question(user_question)
-        cleaned_answer = re.sub(r"<think>.*?</think>", "", raw_answer, flags=re.DOTALL).strip()
-        st.markdown("### 🧠 DeepSeek-R1 Answer")
-        st.markdown(cleaned_answer)
+        clean_answer = re.sub(r"<.*?>", "", raw_answer).strip()
+
+        st.markdown("### 🤖 Re
