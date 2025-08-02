@@ -1,7 +1,6 @@
 streamlit
 langchain
-langchain-community
-langchain-chroma
+faiss-cpu
 sentence-transformers
 PyPDF2
-huggingface-hub
+pdfminer.six
