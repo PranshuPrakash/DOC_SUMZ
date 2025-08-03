@@ -1,4 +1,12 @@
-
+opencv-python-headless
+streamlit
+langchain
+chromadb
+unstructured
+unstructured-inference
+opencv-python-headless
+tiktoken
+python-dotenv
 sentence-transformers
 pysqlite3-binary>=0.5.1
 langchain-community 
@@ -12,4 +20,5 @@ langchain-chroma
 langchain-groq
 streamlit
 sentence-transformers
+
 
