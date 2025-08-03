@@ -1,3 +1,19 @@
+# Patch to use modern SQLite from pysqlite3 (for Streamlit Cloud compatibility)
+import sys
+import pysqlite3
+
+sys.modules["sqlite3"] = pysqlite3
+sys.modules["sqlite3.dbapi2"] = pysqlite3
+
+import os
+from dotenv import load_dotenv
+
+from langchain_community.document_loaders import UnstructuredPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_groq import ChatGroq
+from langchain.chains import RetrievalQA
 import os
 from dotenv import load_dotenv
 
@@ -60,3 +76,4 @@ def answer_question(user_question):
     answer = response["result"]
 
     return answer
+
