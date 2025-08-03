@@ -1,6 +1,10 @@
-streamlit
 langchain
+langchain-community
+chromadb
 faiss-cpu
-sentence-transformers
-PyPDF2
 pdfminer.six
+sentence-transformers
+transformers
+torch
+streamlit
+accelerate
