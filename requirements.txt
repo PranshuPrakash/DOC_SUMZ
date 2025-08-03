@@ -1,3 +1,6 @@
+
+sentence-transformers
+pysqlite3-binary>=0.5.1
 langchain-community 
 langchain 
 langchain-huggingface
@@ -9,3 +12,4 @@ langchain-chroma
 langchain-groq
 streamlit
 sentence-transformers
+
