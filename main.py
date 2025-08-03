@@ -1,4 +1,8 @@
-import os
+import sys, os
+import pysqlite3
+sys.modules["sqlite3"] = pysqlite3
+sys.modules["sqlite3.dbapi2"] = pysqlite3
+from chromadb import Client import os
 import re
 import streamlit as st
 from utility import process_document_to_chroma_db, answer_question
@@ -36,3 +40,4 @@ if st.button("Get Answer"):
 
         st.markdown("### 🤖 DeepSeek-R1 Response")
         st.markdown(filtered_answer)
+
