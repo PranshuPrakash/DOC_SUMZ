@@ -23,9 +23,14 @@ def process_document_to_faiss_db(pdf_file):
     os.remove(temp_path)
     return db
 
+import os
+from langchain.llms import HuggingFaceHub
+
 def answer_question(db, query):
     llm = HuggingFaceHub(
         repo_id="google/flan-t5-base",
+        task="text2text-generation",  # <-- REQUIRED!
+        huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
         model_kwargs={"temperature": 0.3, "max_length": 256}
     )
     chain = load_qa_chain(llm, chain_type="stuff")
