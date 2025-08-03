@@ -1,35 +1,37 @@
 import os
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain_community.llms import HuggingFaceHub
 from langchain_community.document_loaders import PyMuPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.chains.question_answering import load_qa_chain
+from langchain.llms import HuggingFaceHub
 
+def process_document_to_faiss_db(pdf_file):
+    # Save uploaded file to a temporary path
+    temp_path = f"temp_{pdf_file.name}"
+    with open(temp_path, "wb") as f:
+        f.write(pdf_file.read())
 
-def process_document_to_faiss_db(pdf_path: str):
-    loader = PyPDFLoader(pdf_path)
+    loader = PyMuPDFLoader(temp_path)
     documents = loader.load()
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    chunks = splitter.split_documents(documents)
+    # Split documents into chunks
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    docs = text_splitter.split_documents(documents)
 
-    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    db = FAISS.from_documents(chunks, embedding_model)
-    db.save_local("faiss_index")
+    # Use HuggingFace embeddings (MiniLM free model)
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    db = FAISS.from_documents(docs, embeddings)
 
-def answer_question(query: str) -> str:
-    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    db = FAISS.load_local("faiss_index", embedding_model, allow_dangerous_deserialization=True)
+    # Clean up
+    os.remove(temp_path)
 
-    llm = HuggingFaceHub(
-        repo_id="google/flan-t5-base",
-        model_kwargs={"temperature": 0.5, "max_length": 200}
-    )
+    return db
 
-    qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=db.as_retriever())
-    result = qa_chain.run(query)
-    return result
+def answer_question(db, query):
+    # Use free HuggingFaceHub LLM (like google/flan-t5-base)
+    llm = HuggingFaceHub(repo_id="google/flan-t5-base", model_kwargs={"temperature": 0.3, "max_length": 256})
+    chain = load_qa_chain(llm, chain_type="stuff")
+    docs = db.similarity_search(query)
+    return chain.run(input_documents=docs, question=query)
 
