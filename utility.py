@@ -5,6 +5,9 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain_community.llms import HuggingFaceHub
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain.embeddings import HuggingFaceEmbeddings
+
 
 def process_document_to_faiss_db(pdf_path: str):
     loader = PyPDFLoader(pdf_path)
@@ -29,3 +32,4 @@ def answer_question(query: str) -> str:
     qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=db.as_retriever())
     result = qa_chain.run(query)
     return result
+
