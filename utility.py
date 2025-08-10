@@ -39,22 +39,50 @@ llm = ChatGroq(
 )
 
 
+import streamlit as st
+
 def process_document_to_chroma_db(file_name):
-    # load the doc using unstructured
-    loader = UnstructuredPDFLoader(f"{working_dir}/{file_name}")
-    documents = loader.load()
-    # splitting te text into chunks
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=2000,
-        chunk_overlap=200
-    )
-    texts = text_splitter.split_documents(documents)
-    vectordb = Chroma.from_documents(
-        documents=texts,
-        embedding=embedding,
-        persist_directory=f"{working_dir}/doc_vectorstore"
-    )
-    return 0
+    try:
+        # 1️⃣ Load the PDF
+        loader = UnstructuredPDFLoader(f"{working_dir}/{file_name}")
+        documents = loader.load()
+
+        if not documents:
+            st.error("❌ No text could be extracted from the uploaded PDF. Please check the file.")
+            return
+
+        # 2️⃣ Split into chunks
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=2000,
+            chunk_overlap=200
+        )
+        texts = text_splitter.split_documents(documents)
+
+        if not texts:
+            st.error("❌ Document loaded, but no text chunks were created after splitting.")
+            return
+
+        # 3️⃣ Test embeddings
+        try:
+            test_vec = embedding.embed_query("Test embedding")
+            if not test_vec or len(test_vec) == 0:
+                st.error("❌ Embedding model returned empty results. Check model name or internet connection.")
+                return
+        except Exception as e:
+            st.error(f"❌ Failed to initialize embeddings: {e}")
+            return
+
+        # 4️⃣ Save to Chroma DB
+        vectordb = Chroma.from_documents(
+            documents=texts,
+            embedding=embedding,
+            persist_directory=f"{working_dir}/doc_vectorstore"
+        )
+
+        st.sidebar.success("✅ Document processed and stored successfully!")
+
+    except Exception as e:
+        st.error(f"⚠️ Unexpected error while processing document: {e}")
 
 
 def answer_question(user_question):
@@ -76,4 +104,5 @@ def answer_question(user_question):
     answer = response["result"]
 
     return answer
+
 
