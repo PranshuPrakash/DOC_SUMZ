@@ -78,9 +78,6 @@ def process_document_to_chroma_db(file_name):
             embedding=embedding,
             persist_directory=f"{working_dir}/doc_vectorstore"
         )
-
-        st.sidebar.success("✅ Document processed and stored successfully!")
-
     except Exception as e:
         st.error(f"⚠️ Unexpected error while processing document: {e}")
 
@@ -104,5 +101,6 @@ def answer_question(user_question):
     answer = response["result"]
 
     return answer
+
 
 
