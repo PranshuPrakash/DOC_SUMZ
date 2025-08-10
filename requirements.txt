@@ -1,24 +1,25 @@
-opencv-python-headless
+# Core app dependencies
 streamlit
-langchain
-chromadb
-unstructured
-unstructured-inference
 opencv-python-headless
-tiktoken
-python-dotenv
-sentence-transformers
-pysqlite3-binary>=0.5.1
-langchain-community 
-langchain 
+
+# LangChain ecosystem
+langchain
+langchain-community
 langchain-huggingface
 langchain-text-splitters
-unstructured
-unstructured[pdf]
 langchain-unstructured
 langchain-chroma
 langchain-groq
-streamlit
+
+# Document processing
+unstructured[pdf]
+unstructured-inference
+tiktoken
 sentence-transformers
 
+# Database
+chromadb
+pysqlite3-binary>=0.5.1
 
+# Environment variables
+python-dotenv
